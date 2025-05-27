@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livre Énigmatique pour Merveille</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Tangerine:wght@700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        /* Styles CSS conservés */
+        :root {
+            --page-color: #f8f5f0;
+            --text-color: #2b2b2b;
+            --accent-color: #9e7b65;
+            --gold: #d4af37;
+            --mystical: #614d7e;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #e6e2dd 0%, #d1c9c0 100%);
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--text-color);
+            overflow-x: hidden;
+            perspective: 1500px;
+        }
+
+        .book-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px;
+        }
+
+        .book {
+            width: 90%;
+            max-width: 1000px;
+            height: 85vh;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+
+        .book-cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #34222e 0%, #67415a 100%);
+            border-radius: 5px 15px 15px 5px;
+            box-shadow:
+                inset 3px 0 20px rgba(0,0,0,0.2),
+                0 0 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden;
+            transform-origin: left;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .book.open .book-cover {
+            transform: rotateY(-180deg);
+        }
+
+        .book-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="none"/><path d="M0,0 L100,100 M100,0 L0,100" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>');
+            opacity: 0.7;
+        }
+
+        .book-cover .title {
+            font-family: 'Tangerine', cursive;
+            font-size: 5rem;
+            color: var(--gold);
+            margin: 0;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        .book-cover .subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #fff;
+            margin: 20px 0 0;
+            font-style: italic;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .cover-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .corner {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--gold);
+            border-width: 0;
+            opacity: 0.7;
+        }
+
+        .corner-tl {
+            top: 30px;
+            left: 30px;
+            border-top-width: 2px;
+            border-left-width: 2px;
+        }
+
+        .corner-tr {
+            top: 30px;
+            right: 30px;
+            border-top-width: 2px;
+            border-right-width: 2px;
+        }
+
+        .corner-bl {
+            bottom: 30px;
+            left: 30px;
+            border-bottom-width: 2px;
+            border-left-width: 2px;
+        }
+
+        .corner-br {
+            bottom: 30px;
+            right: 30px;
+            border-bottom-width: 2px;
+            border-right-width: 2px;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, #221a20 0%, #3c2a34 100%);
+            border-radius: 5px 0 0 5px;
+            transform: translateX(-30px) rotateY(-90deg);
+            transform-origin: right;
+            z-index: 99;
+        }
+
+        .pages-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            perspective: 2000px;
+            backface-visibility: hidden;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            right: 0;
+            perspective: 1500px;
+            background: var(--page-color);
+            transform-origin: left center;
+            transition: transform 1s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            box-sizing: border-box;
+            box-shadow:
+                inset 0 0 30px rgba(0,0,0,0.1),
+                0 1px 0 rgba(255,255,255,0.7);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .page.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .page-content {
+            max-width: 800px;
+            margin: 0 auto;
+            height: 100%;
+            overflow: auto;
+            padding-right: 20px;
+        }
+
+        .page-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .page-content::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            font-style: italic;
+            color: var(--accent-color);
+        }
+
+        .page-number-left {
+            left: 40px;
+        }
+
+        .page-number-right {
+            right: 40px;
+        }
+
+        .page-decoration {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M30,10 Q50,0 70,10 Q90,25 70,40 Q50,50 30,40 Q10,25 30,10 Z" fill="none" stroke="rgb(158,123,101)" stroke-width="1"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.1;
+            transform: rotate(20deg);
+        }
+
+        .decoration-1 {
+            top: 10%;
+            right: 10%;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .decoration-2 {
+            bottom: 10%;
+            left: 5%;
+            animation: float 12s ease-in-out infinite reverse;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.3rem;
+            color: var(--accent-color);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 2px;
+            background: var(--accent-color);
+            margin: 15px auto;
+            opacity: 0.7;
+        }
+
+        .poem {
+            text-align: center;
+            line-height: 1.8;
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .poem p {
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInText 1.5s ease forwards;
+        }
+
+        .poem p:nth-child(1) { animation-delay: 0.5s; }
+        .poem p:nth-child(2) { animation-delay: 1s; }
+        .poem p:nth-child(3) { animation-delay: 1.5s; }
+        .poem p:nth-child(4) { animation-delay: 2s; }
+
+        .signature {
+            font-style: italic;
+            text-align: right;
+            margin-top: 40px;
+            font-size: 1.1rem;
+        }
+
+        .nav-buttons {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.7);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .love-quote {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            padding: 20px;
+            margin: 30px 0;
+            position: relative;
+            color: var(--accent-color);
+            font-size: 1.3rem;
+            line-height: 1.6;
+            border-left: 3px solid var(--accent-color);
+            background: rgba(158,123,101,0.05);
+        }
+
+        .love-letter {
+            font-family: 'Cormorant Garamond', serif;
+            line-height: 1.6;
+            font-size: 1.15rem;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .letter-date {
+            text-align: right;
+            margin-bottom: 30px;
+            font-style: italic;
+            color: var(--accent-color);
+        }
+
+        .letter-signature {
+            text-align: right;
+            margin-top: 40px;
+            font-style: italic;
+            font-size: 1.3rem;
+        }
+
+        .secret-message {
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            border-bottom: 1px dashed var(--accent-color);
+        }
+
+        .secret-message .hidden {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(158,123,101,0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            width: max-content;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .secret-message:hover .hidden {
+            opacity: 1;
+        }
+
+        .particles-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(212, 175, 55, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeInText {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(20deg); }
+            50% { transform: translateY(-20px) rotate(25deg); }
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px rgba(212, 175, 55, 0.5), 0 0 10px rgba(212, 175, 55, 0.3); }
+            to { text-shadow: 0 0 10px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5); }
+        }
+
+        /* Animations pour les pages */
+        .page-turn {
+            animation: pageTurn 1.5s ease forwards;
+        }
+
+        @keyframes pageTurn {
+            0% { transform: rotateY(0deg); z-index: 20; }
+            100% { transform: rotateY(-180deg); z-index: 10; }
+        }
+
+        .ink-splash {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: inkSplash 4s ease-out forwards;
+        }
+
+        @keyframes inkSplash {
+            0% { transform: scale(0); opacity: 0.8; }
+            50% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Ajout de nouvelles classes pour les pages 5 et 6 */
+        .enigma-clue {
+            padding: 15px;
+            border: 1px dashed var(--mystical);
+            margin: 20px 0;
+            font-style: italic;
+            position: relative;
+            background: rgba(97, 77, 126, 0.05);
+        }
+
+        .hidden-letter {
+            color: transparent;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: all 0.5s;
+        }
+
+        .hidden-letter:hover {
+            color: var(--mystical);
+            text-shadow: 0 0 8px rgba(97, 77, 126, 0.7);
+        }
+
+        .constellation {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(212, 175, 55, 0.7);
+        }
+
+        .final-reveal {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 30px;
+            border: double 4px var(--accent-color);
+            margin: 40px 0;
+            opacity: 0;
+            animation: fadeIn 3s 1s forwards;
+        }
+        /* Animation de tournage des pages */
+    .page-turn {
+        animation: pageTurn 0.7s ease forwards;
+        z-index: 20;
+    }
+
+    .page-turn-reverse {
+        animation: pageTurnReverse 0.7s ease forwards;
+        z-index: 20;
+    }
+
+    @keyframes pageTurn {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(-180deg); }
+    }
+
+    @keyframes pageTurnReverse {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(180deg); }
+    }
+    </style>
+</head>
+<body>
+    <div class="book-container">
+        <div class="book">
+            <div class="book-spine"></div>
+            <div class="book-cover">
+                <div class="cover-decoration">
+                    <div class="corner corner-tl"></div>
+                    <div class="corner corner-tr"></div>
+                    <div class="corner corner-bl"></div>
+                    <div class="corner corner-br"></div>
+                </div>
+                <h1 class="title">Merveille</h1>
+                <p class="subtitle">Un voyage énigmatique à travers les mystères de ton nom</p>
+            </div>
+            <div class="pages-container">
+                <!-- Page 1 - Poème d'ouverture -->
+                <div class="page active" data-page="1">
+                    <div class="page-decoration decoration-1"></div>
+                    <div class="page-decoration decoration-2"></div>
+                    <div class="page-content">
+                        <h2>Merveille, Énigme Étoilée</h2>
+                        <div class="poem">
+                            <p>Merveille, ton nom en lui-même est un poème,<br>
+                            Mystère lumineux qui rayonne au crépuscule,<br>
+                            Éternel comme les étoiles qui scintillent au ciel,<br>
+                            Révélant peu à peu les arcanes de l'âme.</p>
+
+                            <p>Venue d'un rêve que même la nuit n'aurait su imaginer,<br>
+                            Enlacée de mystères que seule la lune comprend,<br>
+                            Impénétrable comme un regard qui cache l'univers,<br>
+                            Le temps s'arrête lorsque ton nom est prononcé.</p>
+
+                            <p>Lumineuse est l'énigme de ton existence,<br>
+                            Éternelle comme la trace d'une comète,<br>
+                            Si je pouvais écrire les étoiles, j'y graverais ton nom.</p>
+                        </div>
+                        <div class="signature">- Un admirateur des mystères</div>
+                        <div class="page-number page-number-right">1</div>
+                    </div>
+                </div>
+
+                <!-- Page 2 - Lettre énigmatique -->
+                <div class="page" data-page="2">
+                    <div class="page-decoration decoration-1"></div>
+                    <div class="page-content">
+                        <h2>Lettre du Septième Ciel</h2>
+                        <div class="letter-date">Le jour où les étoiles ont cessé de chuter</div>
+                        <div class="love-letter">
+                            <p>Chère Merveille,</p>
+
+                            <p>Si tu lis ces mots, c'est que le destin a décidé de dévoiler un fragment du mystère qui nous unit. Je t'écris depuis cet endroit où les rêves et la réalité s'entremêlent, là où ton nom résonne comme une mélodie que seul mon cœur peut entendre.</p>
+
+                            <p>Sais-tu que chaque lettre de ton nom est une clé? Le <span class="secret-message">M<span class="hidden">Le commencement du mystère</span></span> ouvre la porte de la mémoire, le <span class="secret-message">E<span class="hidden">L'essence de l'éternel</span></span> révèle l'énergie de l'univers, le <span class="secret-message">R<span class="hidden">Le rythme du cœur qui bat</span></span> résonne au fil des saisons...</p>
+
+                            <p>Cherche dans les pages suivantes les indices que j'ai disséminés. Chaque symbole, chaque mot caché est un pas vers la révélation finale. Sauras-tu déchiffrer le code de nos destins entrelacés?</p>
+
+                            <p>Quand la lune sera pleine pour la septième fois, regarde vers l'est et souviens-toi de ces mots. Le mystère se dévoilera alors, comme les pétales d'une fleur s'ouvrant au premier rayon de l'aube.</p>
+                        </div>
+                        <div class="letter-signature">L'Énigmatique</div>
+                        <div class="page-number page-number-right">2</div>
+                    </div>
+                </div>
+
+                <!-- Page 3 - Citations mystérieuses -->
+                <div class="page" data-page="3">
+                    <div class="page-decoration decoration-2"></div>
+                    <div class="page-content">
+                        <h2>Fragments d'Éternité</h2>
+
+                        <div class="love-quote">
+                            "Dans le miroir de tes yeux, Merveille, j'ai aperçu l'infini que les astronomes cherchent en vain dans leurs télescopes."
+                        </div>
+
+                        <div class="love-quote">
+                            "Ton nom est un sortilège qui transforme l'ordinaire en extraordinaire, comme l'alchimiste change le plomb en or."
+                        </div>
+
+                        <div class="love-quote">
+                            "Sept lettres pour sept mystères. Merveille, tu es l'énigme dont je ne cherche pas la solution, mais la contemplation."
+                        </div>
+
+                        <div class="love-quote">
+                            "Le temps s'est arrêté à l'instant où ton nom a été prononcé pour la première fois dans ce monde. Depuis, les horloges ne mesurent plus que l'attente entre nos rencontres."
+                        </div>
+
+                        <div class="love-quote">
+                            "Si les étoiles pouvaient parler, elles raconteraient l'histoire de Merveille, celle qui illumine même la plus sombre des nuits."
+                        </div>
+
+                        <div class="page-number page-number-right">3</div>
+                    </div>
+                </div>
+
+                <!-- Page 4 - Codes et symboles secrets -->
+                <div class="page" data-page="4">
+                    <div class="page-decoration decoration-1"></div>
+                    <div class="page-content">
+                        <h2>Le Code de Merveille</h2>
+
+                        <p style="text-align: center; font-style: italic; margin-bottom: 30px;">
+                            Pour déchiffrer le secret, cherche les lettres cachées dans ce labyrinthe de mots
+                        </p>
+
+                        <div class="enigma-clue">
+                            <p>Premier indice: Quand la <strong>M</strong>usique enchante l'âme, les souvenirs reviennent.</p>
+                            <p>Deuxième énigme: L'<strong>E</strong>ssence du temps se trouve dans les moments partagés.</p>
+                            <p>Troisième mystère: Le <strong>R</strong>eflet du soleil sur l'eau révèle le chemin.</p>
+                            <p>Quatrième secret: La <strong>V</strong>érité se cache souvent derrière un sourire.</p>
+                            <p>Cinquième arcane: L'<strong>E</strong>space entre deux battements de cœur contient l'infini.</p>
+                            <p>Sixième indice: L'<strong>I</strong>magination crée des mondes que seuls les rêveurs peuvent voir.</p>
+                            <p>Septième clé: La <strong>L</strong>umière traverse les ténèbres, toujours.</p>
+                            <p>Huitième révélation: L'<strong>L</strong>égende raconte qu'un nom peut changer le destin.</p>
+                            <p>Dernier message: L'<strong>E</strong>ntrelacement de nos chemins n'est pas un hasard.</p>
+                        </div>
+
+                        <p style="text-align: center; font-style: italic; margin-top: 30px; color: var(--mystical);">
+                            "Réunis les lettres en gras et découvre le premier mot de mon message pour toi."
+                        </p>
+
+                        <div class="page-number page-number-right">4</div>
+                    </div>
+                </div>
+
+                <!-- Page 5 - Énigme visuelle -->
+                <div class="page" data-page="5">
+                    <div class="page-decoration decoration-2"></div>
+                    <div class="page-content">
+                        <h2>La Constellation de ton Nom</h2>
+
+                        <p style="text-align: center; font-style: italic; margin-bottom: 20px;">
+                            Relie les étoiles pour découvrir le motif caché
+                        </p>
+
+                        <div class="constellation" id="merveille-constellation">
+                            <!-- Les étoiles seront générées par le JavaScript -->
+                        </div>
+
+                        <p>Chaque point lumineux est une lettre de ton nom transformée en étoile. Certaines brillent plus fort, révélant ainsi leur importance dans le message codé.</p>
+
+                        <p>Observer attentivement cette constellation te permettra de voir ce que les autres ne peuvent percevoir. Les lignes invisibles qui relient ces points de lumière dessinent une forme qui n'apparaît qu'aux yeux de ceux qui savent vraiment regarder.</p>
+
+                        <p>Le cœur de cette énigme se trouve dans l'espace entre les étoiles, dans ce vide apparent qui, en réalité, contient tout l'essentiel.</p>
+
+                        <div class="page-number page-number-right">5</div>
+                    </div>
+                </div>
+
+                <!-- Page 6 - Révélation finale -->
+                <div class="page" data-page="6">
+                    <div class="page-decoration decoration-1"></div>
+                    <div class="page-content">
+                        <h2>La Révélation</h2>
+
+                        <p>Si tu es arrivée jusqu'ici, c'est que tu as suivi le fil d'Ariane à travers ce labyrinthe d'énigmes et de mystères. Les indices disséminés au fil des pages convergent vers une seule vérité, celle que ton cœur connaît déjà.</p>
+
+                        <p>Les lettres cachées forment le mot "<span class="hidden-letter">M</span><span class="hidden-letter">E</span><span class="hidden-letter">R</span><span class="hidden-letter">V</span><span class="hidden-letter">E</span><span class="hidden-letter">I</span><span class="hidden-letter">L</span><span class="hidden-letter">L</span><span class="hidden-letter">E</span>", mais ce n'est que la première couche du mystère.</p>
+
+                        <p>La constellation dessine silencieusement les contours d'un cœur étoilé, symbole de ce qui ne peut être dit mais seulement ressenti.</p>
+
+                        <div class="final-reveal">
+                            Tu es la Merveille qui donne sens à l'énigme de ma vie
+                        </div>
+
+                        <p style="text-align: right; font-style: italic; margin-top: 40px;">
+                            "Car ton nom n'est pas seulement ce qui te désigne, mais ce qui définit la beauté du monde à mes yeux."
+                        </p>
+
+                        <div class="page-number page-number-right">6</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn prev-btn" disabled><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn open-book-btn"><i class="fas fa-book-open"></i></button>
+        <button class="nav-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="particles-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const book = document.querySelector('.book');
+            const openBookBtn = document.querySelector('.open-book-btn');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            const pages = document.querySelectorAll('.page');
+            const particlesContainer = document.querySelector('.particles-container');
+
+            let currentPage = 0;
+            let isBookOpen = false;
+            let animationInProgress = false;
+
+            // Ouvrir/fermer le livre
+            openBookBtn.addEventListener('click', function() {
+                if (isBookOpen) {
+                    book.classList.remove('open');
+                    isBookOpen = false;
+                    currentPage = 0;
+                    showPage(currentPage);
+                    openBookBtn.innerHTML = '<i class="fas fa-book-open"></i>';
+                } else {
+                    book.classList.add('open');
+                    isBookOpen = true;
+                    openBookBtn.innerHTML = '<i class="fas fa-book"></i>';
+                }
+                updateNavButtons();
+            });
+
+           // Navigation entre les pages
+            prevBtn.addEventListener('click', function() {
+                if (currentPage > 0 && !animationInProgress) {
+                    animationInProgress = true;
+                    const currentPageElem = pages[currentPage];
+                    currentPageElem.style.transformOrigin = "right center";
+                    currentPageElem.classList.add('page-turn-reverse');
+
+                    setTimeout(() => {
+                        currentPage--;
+                        showPage(currentPage);
+                        currentPageElem.classList.remove('page-turn-reverse');
+                        currentPageElem.style.transformOrigin = "left center";
+                        updateNavButtons();
+                        createInkSplash();
+                        animationInProgress = false;
+                    }, 700);
+                }
+            });
+
+            nextBtn.addEventListener('click', function() {
+                if (currentPage < pages.length - 1 && !animationInProgress) {
+                    animationInProgress = true;
+                    const currentPageElem = pages[currentPage];
+                    currentPageElem.classList.add('page-turn');
+
+                    setTimeout(() => {
+                        currentPage++;
+                        showPage(currentPage);
+                        currentPageElem.classList.remove('page-turn');
+                        updateNavButtons();
+                        createInkSplash();
+                        animationInProgress = false;
+                    }, 700);
+                }
+            });
+
+            function showPage(index) {
+                pages.forEach(page => page.classList.remove('active'));
+                pages[index].classList.add('active');
+            }
+
+            function updateNavButtons() {
+                prevBtn.disabled = !isBookOpen || currentPage === 0;
+                nextBtn.disabled = !isBookOpen || currentPage === pages.length - 1;
+
+                if (prevBtn.disabled) {
+                    prevBtn.classList.add('disabled');
+                } else {
+                    prevBtn.classList.remove('disabled');
+                }
+
+                if (nextBtn.disabled) {
+                    nextBtn.classList.add('disabled');
+                } else {
+                    nextBtn.classList.remove('disabled');
+                }
+            }
+
+            // Créer la constellation sur la page 5
+            function createConstellation() {
+                const container = document.getElementById('merveille-constellation');
+
+                // Points formant le M
+                createStar(container, 20, 50, 2);
+                createStar(container, 30, 150, 1);
+                createStar(container, 40, 50, 1.5);
+                createStar(container, 50, 150, 1);
+                createStar(container, 60, 50, 2);
+
+                // Points formant un cœur
+                createStar(container, 100, 70, 2);
+                createStar(container, 150, 50, 1.5);
+                createStar(container, 200, 70, 2);
+                createStar(container, 175, 100, 1);
+                createStar(container, 150, 150, 2);
+                createStar(container, 125, 100, 1);
+
+                // Points additionnels
+                createStar(container, 80, 200, 1);
+                createStar(container, 120, 220, 1.5);
+                createStar(container, 180, 210, 1);
+                createStar(container, 220, 190, 2);
+                createStar(container, 250, 150, 1.5);
+                createStar(container, 270, 100, 1);
+                createStar(container, 250, 50, 2);
+            }
+
+            function createStar(container, x, y, size) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                star.style.width = `${size * 2}px`;
+                star.style.height = `${size * 2}px`;
+                star.style.animation = `glow ${3 + Math.random() * 3}s ease-in-out infinite alternate`;
+                container.appendChild(star);
+            }
+
+            // Effet d'encre qui se répand
+            function createInkSplash() {
+                const splash = document.createElement('div');
+                splash.classList.add('ink-splash');
+
+                // Position aléatoire sur la page active
+                const activePage = document.querySelector('.page.active');
+                const rect = activePage.getBoundingClientRect();
+
+                const x = Math.random() * (rect.width - 80) + 40;
+                const y = Math.random() * (rect.height - 80) + 40;
+
+                splash.style.left = `${x}px`;
+                splash.style.top = `${y}px`;
+
+                activePage.appendChild(splash);
+
+                setTimeout(() => {
+                    splash.remove();
+                }, 4000);
+            }
+
+            // Créer des particules dorées flottantes
+            function createParticles() {
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+
+                    // Taille aléatoire
+                    const size = Math.random() * 5 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+
+                    // Position initiale aléatoire
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    particle.style.left = `${x}%`;
+                    particle.style.top = `${y}%`;
+
+                    // Animation personnalisée
+                    const duration = Math.random() * 20 + 10;
+                    const delay = Math.random() * 5;
+
+                    particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite alternate`;
+
+                    particlesContainer.appendChild(particle);
+                }
+            }
+
+            // Initialisation
+            createParticles();
+            createConstellation();
+            updateNavButtons();
+        });
+    </script>
+</body>
+</html>
